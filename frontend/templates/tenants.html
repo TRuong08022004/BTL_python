@@ -23,6 +23,7 @@
 <th>CCCD</th>
 <th>Phòng</th>
 <th>Ngày vào</th>
+<th>Tình trạng</th>
 <th>
 </th>
 </tr>
@@ -36,16 +37,19 @@
 <td>{{ (tenant.identity_number)|text }}</td>
 <td>{{ 'P.' ~ tenant.room_number if tenant.room_number else '—' }}</td>
 <td>{{ (tenant.move_in_date)|text }}</td>
+<td><span class="status-pill {{ 'status-rented' if tenant.active_contract else 'status-empty' }}">{{ 'Đang thuê' if tenant.active_contract else 'Chưa có hợp đồng' }}</span></td>
 <td>
-<form method="post" data-confirm="Xóa khách thuê này?" data-ajax-form>{{ csrf_field() }}<input type="hidden" name="action" value="delete">
+<div class="d-flex gap-2">
+<button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#tenantForm" data-tenant="{{ {'id':tenant.id,'full_name':tenant.full_name,'phone':tenant.phone,'identity_number':tenant.identity_number or '', 'date_of_birth':tenant.date_of_birth|text,'move_in_date':tenant.move_in_date|text,'address':tenant.address or ''}|tojson|forceescape }}">Sửa</button>
+<form method="post" data-confirm="Xóa khách khỏi danh sách quản lý? Các hợp đồng và hóa đơn cũ sẽ được giữ lại." data-ajax-form>{{ csrf_field() }}<input type="hidden" name="action" value="delete">
 <input type="hidden" name="id" value="{{ tenant.id }}">
-<button class="btn btn-sm btn-light text-danger">
-<i class="bi bi-trash">
-</i>
-</button>
+<button class="btn btn-sm btn-outline-danger" title="Xóa khách thuê" type="submit">Xóa</button>
 </form>
+</div>
 </td>
 </tr>
+{% else %}
+<tr><td colspan="8" class="text-center text-body-secondary py-4">Chưa có khách thuê.</td></tr>
 {% endfor %}
 </tbody>
 </table>
@@ -53,9 +57,9 @@
 </div>
 <div class="modal fade" id="tenantForm">
 <div class="modal-dialog modal-lg">
-<form method="post" class="modal-content" data-ajax-form>{{ csrf_field() }}<input type="hidden" name="action" value="create">
+<form method="post" class="modal-content" data-ajax-form data-tenant-form>{{ csrf_field() }}<input type="hidden" name="action" value="create"><input type="hidden" name="id" value="">
 <div class="modal-header">
-<h5>Thêm khách thuê</h5>
+<h5 class="modal-title">Thêm khách thuê</h5>
 <button type="button" class="btn-close" data-bs-dismiss="modal">
 </button>
 </div>

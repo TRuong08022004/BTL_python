@@ -1,10 +1,26 @@
 {% extends 'base.html' %}
 {% block content %}
+<form method="get" action="{{ url_for('reports.dashboard') }}" class="d-flex flex-wrap align-items-center gap-2 mb-3">
+  <label for="revenueMonth" class="form-label mb-0">Tháng doanh thu</label>
+  <select id="revenueMonth" name="month" class="form-select w-auto">
+    {% for value, label in revenue_months %}
+    <option value="{{ value }}" {{ 'selected' if value == revenue_month else '' }}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn btn-primary" type="submit">Xem</button>
+  <span class="text-body-secondary small">
+    {% if has_paid_invoices %}
+    Tính các hóa đơn đã thanh toán thuộc kỳ {{ revenue_month_label }}.
+    {% else %}
+    Chưa có hóa đơn đã thanh toán trong kỳ {{ revenue_month_label }}.
+    {% endif %}
+  </span>
+</form>
 <div class="row g-3">
   {% for color, value, label, icon in [
     ('primary',stats.rooms,'Tổng số phòng','bi-door-open'),
     ('success',stats.rented,'Phòng đang thuê','bi-people'),
-    ('warning',stats.revenue|money,'Doanh thu tháng','bi-cash-stack'),
+    ('warning',stats.revenue|money,'Doanh thu tháng ' ~ revenue_month_label,'bi-cash-stack'),
     ('danger',stats.overdue,'Hóa đơn quá hạn','bi-exclamation-triangle')
   ] %}
   <div class="col-lg-3 col-6"><div class="small-box text-bg-{{ color }}"><div class="inner"><h3>{{ value }}</h3><p>{{ label }}</p></div><i class="small-box-icon bi {{ icon }}"></i></div></div>

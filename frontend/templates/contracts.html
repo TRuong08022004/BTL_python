@@ -16,6 +16,8 @@
 <th>Tiền cọc</th>
 <th>Giá thuê</th>
 <th>Trạng thái</th>
+<th>Chưa thanh toán</th>
+<th>Thao tác</th>
 </tr>
 </thead>
 <tbody>
@@ -28,17 +30,31 @@
 <td>{{ (contract.deposit)|money }}</td>
 <td>{{ (contract.monthly_price)|money }}</td>
 <td>
-<span class="status-pill {{ 'status-rented' if contract.status=='active' else 'status-repair' }}">{{ 'Hiệu lực' if contract.status=='active' else 'Đã kết thúc' }}</span>
+<span class="status-pill {{ 'status-rented' if contract.status=='active' and not contract.expired else 'status-repair' }}">{{ 'Hết hạn, chờ trả phòng' if contract.expired else 'Hiệu lực' if contract.status=='active' else 'Đã kết thúc' }}</span>
+</td>
+<td>{{ contract.unpaid_total|money }}</td>
+<td>
+{% if contract.status == 'active' %}
+<form method="post" data-ajax-form data-confirm="Kết thúc hợp đồng phòng {{ contract.room.room_number }} và trả phòng? Còn {{ contract.unpaid_total|money }} chưa thanh toán. Hồ sơ và hóa đơn sẽ được giữ lại.">
+{{ csrf_field() }}
+<input type="hidden" name="action" value="end">
+<input type="hidden" name="id" value="{{ contract.id }}">
+<button class="btn btn-sm btn-outline-danger text-nowrap" type="submit">Trả phòng</button>
+</form>
+{% else %}
+<span class="text-body-secondary">—</span>
+{% endif %}
 </td>
 </tr>
 {% endfor %}
 </tbody>
 </table>
 </div>
+<div class="card-footer small text-body-secondary">Lập đủ hóa đơn trước khi trả phòng. Các khoản chưa thanh toán vẫn được giữ để thu sau; tiền cọc cần được đối chiếu riêng.</div>
 </div>
 <div class="modal fade" id="contractForm">
 <div class="modal-dialog modal-lg">
-<form method="post" class="modal-content" data-ajax-form data-contract-form>{{ csrf_field() }}<div class="modal-header">
+<form method="post" class="modal-content" data-ajax-form data-contract-form>{{ csrf_field() }}<input type="hidden" name="action" value="create"><div class="modal-header">
 <h5>Tạo hợp đồng</h5>
 <button type="button" class="btn-close" data-bs-dismiss="modal">
 </button>

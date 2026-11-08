@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, abort, render_template, request
 from sqlalchemy import select
 
 from ..helpers import (
@@ -18,6 +18,41 @@ contracts = Blueprint("contracts", __name__)
 @login_required
 def index():
     if request.method == "POST":
+        action = request.form.get("action", "create")
+        if action == "end":
+            contract_id = record_id("id")
+            existing = db.session.get(Contract, contract_id)
+            if existing is None:
+                abort(404, "Không tìm thấy hợp đồng.")
+            tenant = db.session.scalar(
+                select(Tenant).where(Tenant.id == existing.tenant_id).with_for_update()
+            )
+            room = db.session.scalar(
+                select(Room).where(Room.id == existing.room_id).with_for_update()
+            )
+            contract = db.session.scalar(
+                select(Contract)
+                .where(Contract.id == contract_id)
+                .with_for_update()
+                .execution_options(populate_existing=True)
+            )
+            if contract.status != "active":
+                raise ValueError("Hợp đồng đã kết thúc trước đó.")
+            contract.status = "ended"
+            other_room_contract = db.session.scalar(
+                select(Contract.id)
+                .where(Contract.room_id == room.id, Contract.status == "active")
+                .limit(1)
+            )
+            if other_room_contract is None and room.status != "repair":
+                room.status = "empty"
+            db.session.commit()
+            return action_response(
+                "Đã kết thúc hợp đồng. Có thể sửa hoặc xóa hồ sơ trong mục Khách thuê; hóa đơn vẫn được giữ lại.",
+                "contracts.index",
+            )
+        if action != "create":
+            raise ValueError("Thao tác không hợp lệ.")
         tenant_id, room_id = record_id("tenant_id"), record_id("room_id")
         start, end = date_field("start_date"), date_field("end_date")
         if end <= start:
@@ -58,7 +93,9 @@ def index():
         .order_by(Tenant.full_name)
     ).all()
     available_rooms = db.session.scalars(
-        select(Room).where(Room.status == "empty").order_by(Room.room_number)
+        select(Room)
+        .where(Room.status == "empty", ~Room.contracts.any(Contract.status == "active"))
+        .order_by(Room.room_number)
     ).all()
     return render_template(
         "contracts.html",

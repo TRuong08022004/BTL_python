@@ -111,6 +111,25 @@ const initializeContractForms = root => {
   });
 };
 
+const initializeTenantForms = root => {
+  root.querySelectorAll("[data-tenant-form]").forEach(form => {
+    if (form.dataset.editBound) return;
+    form.dataset.editBound = "true";
+    const modal = form.closest(".modal");
+    modal.addEventListener("show.bs.modal", event => {
+      form.reset();
+      const raw = event.relatedTarget?.dataset.tenant;
+      const tenant = raw ? JSON.parse(raw) : null;
+      form.elements.namedItem("action").value = tenant ? "update" : "create";
+      form.elements.namedItem("id").value = tenant?.id || "";
+      for (const name of ["full_name", "phone", "identity_number", "date_of_birth", "move_in_date", "address"]) {
+        form.elements.namedItem(name).value = tenant?.[name] || "";
+      }
+      modal.querySelector(".modal-title").textContent = tenant ? "Sửa khách thuê" : "Thêm khách thuê";
+    });
+  });
+};
+
 const initializeAjaxForms = root => {
   root.querySelectorAll("form[data-ajax-form]").forEach(form => {
     if (form.dataset.ajaxBound) return;
@@ -220,6 +239,7 @@ function initializeApp(root = document) {
   initializeTableSearch(root);
   initializeRoomFilters(root);
   initializeContractForms(root);
+  initializeTenantForms(root);
   initializeAjaxForms(root);
   initializeRoomStatusAjax(root);
   initializeTraditionalConfirmations(root);

@@ -89,6 +89,17 @@ class Contract(db.Model):
     tenant = db.relationship("Tenant", back_populates="contracts")
     invoices = db.relationship("Invoice", back_populates="contract")
 
+    @property
+    def expired(self):
+        return self.status == "active" and self.end_date < date.today()
+
+    @property
+    def unpaid_total(self):
+        return sum(
+            (invoice.total for invoice in self.invoices if invoice.status != "paid"),
+            Decimal(0),
+        )
+
 
 class Invoice(db.Model):
     __tablename__ = "invoices"
