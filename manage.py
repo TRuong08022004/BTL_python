@@ -40,6 +40,32 @@ def create_database():
     db.create_all()
 
 
+def upgrade_database():
+    column = next(
+        item
+        for item in inspect(db.engine).get_columns("contracts")
+        if item["name"] == "tenant_id"
+    )
+    if not column["nullable"]:
+        if db.engine.dialect.name != "mysql":
+            raise SystemExit("Cần nâng cấp contracts.tenant_id để cho phép NULL.")
+        column_type = column["type"].compile(dialect=db.engine.dialect)
+        with db.engine.begin() as connection:
+            connection.execute(
+                text(f"ALTER TABLE contracts MODIFY tenant_id {column_type} NULL")
+            )
+    removed = db.session.scalars(
+        select(Tenant).where(
+            Tenant.status == "inactive",
+            ~Tenant.contracts.any(Contract.status == "active"),
+        )
+    ).all()
+    for tenant in removed:
+        tenant.delete_profile()
+    db.session.commit()
+    return len(removed)
+
+
 def import_php(source_database):
     source_database = database_name(source_database)
     if source_database == db.engine.url.database:
@@ -160,7 +186,8 @@ def seed_demo():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "command", choices=["init", "import-php", "reset-password", "export-schema"]
+        "command",
+        choices=["init", "import-php", "reset-password", "export-schema", "upgrade"],
     )
     parser.add_argument("--source-db", default="motel_management")
     parser.add_argument("--email", default="admin@motel.vn")
@@ -170,6 +197,10 @@ def main():
     with app.app_context():
         if args.command == "import-php":
             import_php(args.source_db)
+        elif args.command == "upgrade":
+            create_database()
+            removed = upgrade_database()
+            print(f"Đã nâng cấp CSDL. Đã xóa {removed} hồ sơ khách từng bị ẩn.")
         elif args.command == "export-schema":
             name = database_name(db.engine.url.database)
             sql = f"CREATE DATABASE IF NOT EXISTS `{name}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\nUSE `{name}`;\n"
@@ -187,6 +218,7 @@ def main():
             print("Đã xuất database/schema.sql.")
         elif args.command == "init":
             create_database()
+            upgrade_database()
             if not db.session.scalar(select(User).where(User.email == args.email)):
                 password = secrets.token_urlsafe(12)
                 db.session.add(

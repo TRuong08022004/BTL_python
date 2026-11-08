@@ -24,7 +24,7 @@
 {% for contract in contracts %}
 <tr>
 <td>{{ (contract.contract_code)|text }}</td>
-<td>{{ (contract.tenant.full_name)|text }}</td>
+<td>{{ contract.tenant_name }}</td>
 <td>P.{{ (contract.room.room_number)|text }}</td>
 <td>{{ (contract.start_date)|text }} – {{ (contract.end_date)|text }}</td>
 <td>{{ (contract.deposit)|money }}</td>
@@ -35,7 +35,7 @@
 <td>{{ contract.unpaid_total|money }}</td>
 <td>
 {% if contract.status == 'active' %}
-<form method="post" data-ajax-form data-confirm="Kết thúc hợp đồng phòng {{ contract.room.room_number }} và trả phòng? Còn {{ contract.unpaid_total|money }} chưa thanh toán. Hồ sơ và hóa đơn sẽ được giữ lại.">
+<form method="post" data-ajax-form data-confirm="Trả phòng {{ contract.room.room_number }} và xóa hồ sơ khách? Còn {{ contract.unpaid_total|money }} chưa thanh toán. Hóa đơn cũ vẫn được giữ lại.">
 {{ csrf_field() }}
 <input type="hidden" name="action" value="end">
 <input type="hidden" name="id" value="{{ contract.id }}">
@@ -50,7 +50,7 @@
 </tbody>
 </table>
 </div>
-<div class="card-footer small text-body-secondary">Lập đủ hóa đơn trước khi trả phòng. Các khoản chưa thanh toán vẫn được giữ để thu sau; tiền cọc cần được đối chiếu riêng.</div>
+<div class="card-footer small text-body-secondary">Lập đủ hóa đơn và đối chiếu tiền cọc trước khi trả phòng. Hồ sơ khách sẽ được xóa; các hóa đơn cũ vẫn được giữ lại.</div>
 </div>
 <div class="modal fade" id="contractForm">
 <div class="modal-dialog modal-lg">

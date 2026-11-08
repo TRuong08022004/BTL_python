@@ -25,7 +25,7 @@
 {% for invoice in invoices %}
 <tr>
 <td>{{ (invoice.invoice_code)|text }}</td>
-<td>P.{{ (invoice.contract.room.room_number)|text }}<small class="d-block text-body-secondary">{{ (invoice.contract.tenant.full_name)|text }}</small>
+<td>P.{{ (invoice.contract.room.room_number)|text }}<small class="d-block text-body-secondary">{{ invoice.contract.tenant_name }}</small>
 </td>
 <td>{{ (invoice.billing_month.strftime('%Y-%m'))|text }}</td>
 <td>{{ (invoice.room_charge)|money }}</td>
@@ -65,7 +65,7 @@
 <label class="form-label">Hợp đồng</label>
 <select name="contract_id" class="form-select" required>
 {% for contract in contracts %}
-<option value="{{ contract.id }}">P.{{ (contract.room.room_number)|text }} — {{ (contract.tenant.full_name)|text }}</option>
+<option value="{{ contract.id }}">P.{{ (contract.room.room_number)|text }} — {{ contract.tenant_name }}</option>
 {% endfor %}
 </select>
 </div>

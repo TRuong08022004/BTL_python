@@ -46,9 +46,16 @@ def index():
             )
             if other_room_contract is None and room.status != "repair":
                 room.status = "empty"
+            delete_customer = tenant is not None and not tenant.active_contract
+            if delete_customer:
+                tenant.delete_profile()
             db.session.commit()
             return action_response(
-                "Đã kết thúc hợp đồng. Có thể sửa hoặc xóa hồ sơ trong mục Khách thuê; hóa đơn vẫn được giữ lại.",
+                (
+                    "Đã trả phòng và xóa hồ sơ khách. Các hóa đơn cũ vẫn được giữ lại."
+                    if delete_customer
+                    else "Đã kết thúc hợp đồng. Các hợp đồng khác và hóa đơn cũ vẫn được giữ lại."
+                ),
                 "contracts.index",
             )
         if action != "create":

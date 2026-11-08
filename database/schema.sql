@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS contracts (
 	id INTEGER NOT NULL AUTO_INCREMENT, 
 	contract_code VARCHAR(30) NOT NULL, 
-	tenant_id INTEGER NOT NULL, 
+	tenant_id INTEGER,
 	room_id INTEGER NOT NULL, 
 	start_date DATE NOT NULL, 
 	end_date DATE NOT NULL, 

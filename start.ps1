@@ -6,4 +6,6 @@ if (-not (Test-Path -LiteralPath '.venv\Scripts\python.exe')) {
     & .\.venv\Scripts\python.exe -m pip install -r requirements.txt
     if ($LASTEXITCODE -ne 0) { throw 'Khong cai duoc thu vien.' }
 }
+& .\.venv\Scripts\python.exe manage.py upgrade
+if ($LASTEXITCODE -ne 0) { throw 'Khong nang cap duoc CSDL. Hay bat MySQL trong XAMPP.' }
 & .\.venv\Scripts\python.exe app.py

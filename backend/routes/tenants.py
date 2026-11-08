@@ -62,17 +62,11 @@ def index():
             )
             if tenant is None:
                 abort(404, "Không tìm thấy khách thuê.")
-            if tenant.active_contract:
-                raise ValueError(
-                    "Cần kết thúc hợp đồng và trả phòng trước khi xóa khách thuê."
-                )
-            if tenant.contracts:
-                tenant.status = "inactive"
-            else:
-                db.session.delete(tenant)
+            tenant.delete_profile()
             db.session.commit()
             return action_response(
-                "Đã xóa khách khỏi danh sách quản lý.", "tenants.index"
+                "Đã xóa hồ sơ khách. Có thể thêm lại khách khi quay lại thuê.",
+                "tenants.index",
             )
         raise ValueError("Thao tác không hợp lệ.")
     records = db.session.scalars(

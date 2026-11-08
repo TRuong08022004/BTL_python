@@ -44,7 +44,7 @@ class Room(db.Model):
 
     @property
     def tenant_name(self):
-        return self.active_contract.tenant.full_name if self.active_contract else ""
+        return self.active_contract.tenant_name if self.active_contract else ""
 
 
 class Tenant(db.Model):
@@ -72,12 +72,21 @@ class Tenant(db.Model):
     def room_number(self):
         return self.active_contract.room.room_number if self.active_contract else ""
 
+    def delete_profile(self):
+        if self.active_contract:
+            raise ValueError(
+                "Cần kết thúc hợp đồng và trả phòng trước khi xóa khách thuê."
+            )
+        for contract in list(self.contracts):
+            contract.tenant = None
+        db.session.delete(self)
+
 
 class Contract(db.Model):
     __tablename__ = "contracts"
     id = db.Column(db.Integer, primary_key=True)
     contract_code = db.Column(db.String(30), unique=True, nullable=False)
-    tenant_id = db.Column(db.Integer, db.ForeignKey("tenants.id"), nullable=False)
+    tenant_id = db.Column(db.Integer, db.ForeignKey("tenants.id"), nullable=True)
     room_id = db.Column(db.Integer, db.ForeignKey("rooms.id"), nullable=False)
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=False)
@@ -88,6 +97,10 @@ class Contract(db.Model):
     room = db.relationship("Room", back_populates="contracts")
     tenant = db.relationship("Tenant", back_populates="contracts")
     invoices = db.relationship("Invoice", back_populates="contract")
+
+    @property
+    def tenant_name(self):
+        return self.tenant.full_name if self.tenant else "Khách đã xóa"
 
     @property
     def expired(self):
