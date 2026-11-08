@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex flex-wrap gap-2 mb-3">
+<div class="btn-group">
+<button class="btn btn-outline-primary active" data-room-filter="all">Tất cả</button>
+<button class="btn btn-outline-primary" data-room-filter="rented">Đang thuê</button>
+<button class="btn btn-outline-primary" data-room-filter="empty">Còn trống</button>
+<button class="btn btn-outline-primary" data-room-filter="repair">Bảo trì</button>
+</div>
+<button class="btn btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#roomForm">
+<i class="bi bi-plus-lg">
+</i> Thêm phòng</button>
+</div>
+<div class="row g-3 mb-4">
+{% for room in rooms %}
+<div class="col-sm-6 col-xl-4 col-xxl-3" data-room-status="{{ (room.status)|text }}">
+<div class="card room-card">
+<div class="room-cover">
+<div>
+<div class="room-code">Phòng {{ (room.room_number)|text }}</div>
+<span class="status-pill {{ room_classes[room.status] }}" data-room-status-badge>{{ room_statuses[room.status] }}</span>
+</div>
+</div>
+<div class="card-body">
+<p class="mb-1">
+<strong>{{ (room.monthly_price)|money }}</strong>/tháng</p>
+<p class="text-body-secondary small mb-2">{{ (room.area)|text }} m² · {{ (room.tenant_name or 'Chưa có khách')|text }}</p>
+<p class="small">{{ (room.description)|text }}</p>
+<form method="post" action="{{ url_for('rooms.update_status') }}" class="d-flex gap-2 mb-3" data-ajax-room-status>{{ csrf_field() }}<input type="hidden" name="id" value="{{ room.id }}">
+<select name="status" class="form-select form-select-sm" aria-label="Trạng thái phòng" data-original-value="{{ (room.status)|text }}">
+<option value="empty" {{ 'selected' if room.status=='empty' else '' }}>Còn trống</option>
+<option value="rented" {{ 'selected' if room.status=='rented' else '' }}>Đang thuê</option>
+<option value="repair" {{ 'selected' if room.status=='repair' else '' }}>Bảo trì</option>
+</select>
+<button class="btn btn-sm btn-outline-primary" title="Lưu trạng thái">
+<i class="bi bi-check-lg">
+</i>
+</button>
+</form>
+<form method="post" class="text-end" data-confirm="Xóa phòng này?" data-ajax-form>{{ csrf_field() }}<input type="hidden" name="action" value="delete">
+<input type="hidden" name="id" value="{{ room.id }}">
+<button class="btn btn-sm btn-outline-danger">
+<i class="bi bi-trash">
+</i>
+</button>
+</form>
+</div>
+</div>
+</div>
+{% endfor %}
+</div>
+<div class="modal fade" id="roomForm">
+<div class="modal-dialog modal-dialog-centered">
+<form class="modal-content" method="post" data-ajax-form>{{ csrf_field() }}<input type="hidden" name="action" value="create">
+<div class="modal-header">
+<h5 class="modal-title">Thêm phòng mới</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal">
+</button>
+</div>
+<div class="modal-body">
+<div class="row g-3">
+<div class="col-6">
+<label class="form-label">Số phòng</label>
+<input name="room_number" class="form-control" required>
+</div>
+<div class="col-6">
+<label class="form-label">Diện tích (m²)</label>
+<input name="area" type="number" step="0.1" class="form-control">
+</div>
+<div class="col-12">
+<label class="form-label">Giá thuê</label>
+<input name="monthly_price" type="number" min="0" class="form-control" required>
+</div>
+<div class="col-6">
+<label class="form-label">Giá điện/kWh</label>
+<input name="electricity_price" type="number" value="3500" class="form-control">
+</div>
+<div class="col-6">
+<label class="form-label">Tiền nước</label>
+<input name="water_price" type="number" value="100000" class="form-control">
+</div>
+<div class="col-12">
+<label class="form-label">Trạng thái</label>
+<select name="status" class="form-select">
+<option value="empty">Còn trống</option>
+<option value="repair">Bảo trì</option>
+</select>
+</div>
+<div class="col-12">
+<label class="form-label">Mô tả</label>
+<textarea name="description" class="form-control">
+</textarea>
+</div>
+</div>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+<button class="btn btn-primary">Lưu</button>
+</div>
+</form>
+</div>
+</div>
+{% endblock %}

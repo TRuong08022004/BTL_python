@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card content-card mb-4">
+<div class="card-header d-flex gap-2">
+<div class="input-group" style="max-width:380px">
+<span class="input-group-text">
+<i class="bi bi-search">
+</i>
+</span>
+<input class="form-control" data-table-search placeholder="Tìm tên, SĐT hoặc phòng">
+</div>
+<button class="btn btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#tenantForm">
+<i class="bi bi-person-plus">
+</i> Thêm khách</button>
+</div>
+<div class="card-body table-responsive p-0">
+<table class="table table-hover align-middle mb-0">
+<thead>
+<tr>
+<th>Mã KH</th>
+<th>Họ tên</th>
+<th>Điện thoại</th>
+<th>CCCD</th>
+<th>Phòng</th>
+<th>Ngày vào</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+{% for tenant in tenants %}
+<tr data-search-row>
+<td>{{ (tenant.tenant_code)|text }}</td>
+<td>{{ (tenant.full_name)|text }}</td>
+<td>{{ (tenant.phone)|text }}</td>
+<td>{{ (tenant.identity_number)|text }}</td>
+<td>{{ 'P.' ~ tenant.room_number if tenant.room_number else '—' }}</td>
+<td>{{ (tenant.move_in_date)|text }}</td>
+<td>
+<form method="post" data-confirm="Xóa khách thuê này?" data-ajax-form>{{ csrf_field() }}<input type="hidden" name="action" value="delete">
+<input type="hidden" name="id" value="{{ tenant.id }}">
+<button class="btn btn-sm btn-light text-danger">
+<i class="bi bi-trash">
+</i>
+</button>
+</form>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+<div class="modal fade" id="tenantForm">
+<div class="modal-dialog modal-lg">
+<form method="post" class="modal-content" data-ajax-form>{{ csrf_field() }}<input type="hidden" name="action" value="create">
+<div class="modal-header">
+<h5>Thêm khách thuê</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal">
+</button>
+</div>
+<div class="modal-body">
+<div class="row g-3">
+<div class="col-md-6">
+<label class="form-label">Họ tên</label>
+<input name="full_name" class="form-control" required>
+</div>
+<div class="col-md-6">
+<label class="form-label">Điện thoại</label>
+<input name="phone" class="form-control" required>
+</div>
+<div class="col-md-6">
+<label class="form-label">CCCD</label>
+<input name="identity_number" class="form-control">
+</div>
+<div class="col-md-6">
+<label class="form-label">Ngày sinh</label>
+<input name="date_of_birth" type="date" class="form-control">
+</div>
+<div class="col-md-6">
+<label class="form-label">Ngày vào</label>
+<input name="move_in_date" type="date" class="form-control">
+</div>
+<div class="col-12">
+<label class="form-label">Địa chỉ</label>
+<input name="address" class="form-control">
+</div>
+</div>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+<button class="btn btn-primary">Lưu</button>
+</div>
+</form>
+</div>
+</div>
+{% endblock %}

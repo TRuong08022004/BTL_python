@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row g-3">
+  {% for color, value, label, icon in [
+    ('primary',stats.rooms,'Tổng số phòng','bi-door-open'),
+    ('success',stats.rented,'Phòng đang thuê','bi-people'),
+    ('warning',stats.revenue|money,'Doanh thu tháng','bi-cash-stack'),
+    ('danger',stats.overdue,'Hóa đơn quá hạn','bi-exclamation-triangle')
+  ] %}
+  <div class="col-lg-3 col-6"><div class="small-box text-bg-{{ color }}"><div class="inner"><h3>{{ value }}</h3><p>{{ label }}</p></div><i class="small-box-icon bi {{ icon }}"></i></div></div>
+  {% endfor %}
+</div>
+<div class="row g-3 mt-1 mb-4">
+  <div class="col-12"><div class="card content-card"><div class="card-header border-0"><h3 class="card-title">Hóa đơn gần đây</h3></div><div class="card-body table-responsive p-0">
+    <table class="table table-hover mb-0"><thead><tr><th>Mã</th><th>Phòng</th><th>Tổng</th><th>Trạng thái</th></tr></thead><tbody>
+      {% for invoice in recent_invoices %}
+      <tr><td>{{ invoice.invoice_code }}</td><td>P.{{ invoice.contract.room.room_number }}</td><td>{{ invoice.total|money }}</td><td><span class="status-pill {{ 'status-rented' if invoice.status == 'paid' else 'status-overdue' if invoice.overdue else 'status-repair' }}">{{ 'Đã trả' if invoice.status == 'paid' else 'Quá hạn' if invoice.overdue else 'Chờ trả' }}</span></td></tr>
+      {% endfor %}
+    </tbody></table>
+  </div></div></div>
+</div>
+{% endblock %}

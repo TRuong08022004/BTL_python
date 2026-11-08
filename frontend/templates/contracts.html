@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card content-card mb-4">
+<div class="card-header d-flex">
+<h3 class="card-title">Danh sách hợp đồng</h3>
+<button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#contractForm">Tạo hợp đồng</button>
+</div>
+<div class="card-body table-responsive p-0">
+<table class="table table-hover align-middle mb-0">
+<thead>
+<tr>
+<th>Mã HĐ</th>
+<th>Khách</th>
+<th>Phòng</th>
+<th>Thời hạn</th>
+<th>Tiền cọc</th>
+<th>Giá thuê</th>
+<th>Trạng thái</th>
+</tr>
+</thead>
+<tbody>
+{% for contract in contracts %}
+<tr>
+<td>{{ (contract.contract_code)|text }}</td>
+<td>{{ (contract.tenant.full_name)|text }}</td>
+<td>P.{{ (contract.room.room_number)|text }}</td>
+<td>{{ (contract.start_date)|text }} – {{ (contract.end_date)|text }}</td>
+<td>{{ (contract.deposit)|money }}</td>
+<td>{{ (contract.monthly_price)|money }}</td>
+<td>
+<span class="status-pill {{ 'status-rented' if contract.status=='active' else 'status-repair' }}">{{ 'Hiệu lực' if contract.status=='active' else 'Đã kết thúc' }}</span>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+<div class="modal fade" id="contractForm">
+<div class="modal-dialog modal-lg">
+<form method="post" class="modal-content" data-ajax-form data-contract-form>{{ csrf_field() }}<div class="modal-header">
+<h5>Tạo hợp đồng</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal">
+</button>
+</div>
+<div class="modal-body">
+<div class="row g-3">
+<div class="col-md-6">
+<label class="form-label">Khách thuê</label>
+<select name="tenant_id" class="form-select" required>
+{% for tenant in tenants %}
+<option value="{{ tenant.id }}">{{ (tenant.full_name)|text }}</option>
+{% endfor %}
+</select>
+</div>
+<div class="col-md-6">
+<label class="form-label">Phòng trống</label>
+<select name="room_id" class="form-select" required>
+{% for room in rooms %}
+<option value="{{ room.id }}" data-price="{{ room.monthly_price }}">P.{{ (room.room_number)|text }}</option>
+{% endfor %}
+</select>
+</div>
+<div class="col-md-6">
+<label class="form-label">Ngày bắt đầu</label>
+<input name="start_date" type="date" class="form-control" required>
+</div>
+<div class="col-md-6">
+<label class="form-label">Ngày kết thúc</label>
+<input name="end_date" type="date" class="form-control" required>
+</div>
+<div class="col-md-6">
+<label class="form-label">Giá thuê</label>
+<input name="monthly_price" type="number" min="1" class="form-control" required>
+</div>
+<div class="col-md-6">
+<label class="form-label">Tiền cọc</label>
+<input name="deposit" type="number" min="0" class="form-control" required>
+</div>
+</div>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+<button class="btn btn-primary" {{ 'disabled' if not rooms or not tenants else '' }}>Lưu hợp đồng</button>
+</div>
+</form>
+</div>
+</div>
+{% endblock %}

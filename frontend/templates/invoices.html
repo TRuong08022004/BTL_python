@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card content-card mb-4">
+<div class="card-header d-flex">
+<h3 class="card-title">Danh sách hóa đơn</h3>
+<button class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#invoiceForm">Tạo hóa đơn</button>
+</div>
+<div class="card-body table-responsive p-0">
+<table class="table table-hover align-middle mb-0">
+<thead>
+<tr>
+<th>Mã</th>
+<th>Phòng/Khách</th>
+<th>Kỳ</th>
+<th>Tiền phòng</th>
+<th>Điện</th>
+<th>Nước & DV</th>
+<th>Tổng</th>
+<th>Hạn TT</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+{% for invoice in invoices %}
+<tr>
+<td>{{ (invoice.invoice_code)|text }}</td>
+<td>P.{{ (invoice.contract.room.room_number)|text }}<small class="d-block text-body-secondary">{{ (invoice.contract.tenant.full_name)|text }}</small>
+</td>
+<td>{{ (invoice.billing_month.strftime('%Y-%m'))|text }}</td>
+<td>{{ (invoice.room_charge)|money }}</td>
+<td>{{ (invoice.electricity_charge)|money }}</td>
+<td>{{ (invoice.water_charge+invoice.service_charge)|money }}</td>
+<td>
+<strong>{{ (invoice.total)|money }}</strong>
+</td>
+<td>{{ (invoice.due_date)|text }}</td>
+<td>
+{% if invoice.status == 'paid' %}
+<span class="status-pill status-rented">Đã trả</span>
+{% else %}
+<form method="post" data-ajax-form>{{ csrf_field() }}<input type="hidden" name="action" value="paid">
+<input type="hidden" name="id" value="{{ invoice.id }}">
+<button class="btn btn-sm {{ 'btn-danger' if invoice.status=='overdue' else 'btn-outline-success' }}">Xác nhận trả</button>
+</form>
+{% endif %}
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+<div class="modal fade" id="invoiceForm">
+<div class="modal-dialog modal-lg">
+<form method="post" class="modal-content" data-ajax-form>{{ csrf_field() }}<input type="hidden" name="action" value="create">
+<div class="modal-header">
+<h5>Tạo hóa đơn tháng</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal">
+</button>
+</div>
+<div class="modal-body">
+<div class="row g-3">
+<div class="col-md-6">
+<label class="form-label">Hợp đồng</label>
+<select name="contract_id" class="form-select" required>
+{% for contract in contracts %}
+<option value="{{ contract.id }}">P.{{ (contract.room.room_number)|text }} — {{ (contract.tenant.full_name)|text }}</option>
+{% endfor %}
+</select>
+</div>
+<div class="col-md-6">
+<label class="form-label">Kỳ hóa đơn</label>
+<input name="billing_month" type="month" value="{{ today.strftime('%Y-%m') }}" class="form-control" required>
+</div>
+<div class="col-md-6">
+<label class="form-label">Chỉ số điện cũ</label>
+<input name="old_electricity" type="number" min="0" class="form-control" required>
+</div>
+<div class="col-md-6">
+<label class="form-label">Chỉ số điện mới</label>
+<input name="new_electricity" type="number" min="0" class="form-control" required>
+</div>
+<div class="col-md-4">
+<label class="form-label">Tiền nước (để trống lấy giá phòng)</label>
+<input name="water_charge" type="number" min="0" class="form-control">
+</div>
+<div class="col-md-4">
+<label class="form-label">Phí dịch vụ</label>
+<input name="service_charge" type="number" min="0" value="0" class="form-control">
+</div>
+<div class="col-md-4">
+<label class="form-label">Hạn thanh toán</label>
+<input name="due_date" type="date" class="form-control" required>
+</div>
+</div>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+<button class="btn btn-primary" {{ 'disabled' if not contracts else '' }}>Tạo hóa đơn</button>
+</div>
+</form>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Đăng nhập | Motel Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
+</head>
+<body>
+<div class="login-page-custom"><div class="card login-panel"><div class="row g-0">
+  <div class="col-md-6 login-intro">
+    <div class="d-flex align-items-center gap-3"><span class="brand-mark"><i class="bi bi-buildings"></i></span><strong class="fs-5">Motel Admin</strong></div>
+    <div class="mt-5"><h1 class="display-6 fw-bold">Quản lý phòng trọ trên một hệ thống thống nhất.</h1><p class="opacity-75 mt-3">Phòng, khách thuê, hợp đồng, hóa đơn và báo cáo doanh thu.</p></div>
+  </div>
+  <div class="col-md-6 login-form-side"><div class="w-100">
+    <h2 class="fw-bold">Đăng nhập</h2><p class="text-body-secondary mb-4">Nhập tài khoản quản trị để tiếp tục.</p>
+    {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+    <form method="post">{{ csrf_field() }}
+      <div class="mb-3"><label class="form-label" for="email">Email</label><input id="email" type="email" name="email" class="form-control" value="{{ request.form.get('email', 'admin@motel.vn') }}" autocomplete="username" required></div>
+      <div class="mb-4"><label class="form-label" for="password">Mật khẩu</label><input id="password" type="password" name="password" class="form-control" autocomplete="current-password" required></div>
+      <button class="btn btn-primary w-100">Đăng nhập</button>
+    </form>
+    <p class="small text-body-secondary text-center mt-4">Dùng tài khoản đã tạo hoặc nhập từ bản PHP.</p>
+  </div></div>
+</div></div></div>
+</body>
+</html>
